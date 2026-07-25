@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Sorteio Kit Natura</title>
+<link rel="icon" href="assets/img/logo-ibpm.jpg">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="spinner"></div>
+  <div style="font-size:13px;font-weight:700;color:var(--mid)">Sincronizando...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- TELA DE LOGIN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <img class="login-logo-img" src="assets/img/logo-ibpm.jpg" alt="Logo IPBM">
+    <h2>Sorteio Kit Natura Ilia</h2>
+    <div class="verse-box">
+      <div class="verse-text">"Cada um dê conforme determinou em seu coração, não com pesar ou por obrigação, pois Deus ama quem dá com alegria."</div>
+      <div class="verse-ref">2 Coríntios 9:7</div>
+    </div>
+    <p class="instruction">Insira seu WhatsApp para reservar números ou consultar suas compras.</p>
+    <div class="form-control">
+      <label class="form-label" for="loginFone">Número de WhatsApp</label>
+      <input class="form-input" id="loginFone" type="tel" inputmode="numeric"
+             placeholder="(00) 00000-0000" autocomplete="tel" maxlength="16">
+      <div class="form-hint" id="loginFoneHint">Use DDD + número (10 ou 11 dígitos)</div>
+    </div>
+    <button class="btn-submit" id="btnLogin" onclick="autenticarUsuario()">Acessar a Rifa &rarr;</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appMain" class="app">
+  <div class="app-header">
+    <div class="nav-bar">
+      <div class="nav-brand-area">
+        <img class="nav-logo-mini" src="assets/img/logo-ibpm.jpg" alt="">
+        <div>
+          <div class="nav-title">Sorteio Kit Natura Ilia</div>
+          <div class="nav-status" id="navStatus"><span class="dot"></span><span id="navStatusText">Conectando...</span></div>
+        </div>
+      </div>
+      <button class="nav-logout" onclick="fazerLogout()" aria-label="Sair">Sair</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- BANNER -->
+    <div class="promo-banner">
+      <div class="slider-container">
+        <img class="slide-img" src="assets/img/foto-rifa-1.jpg" alt="Kit Natura Ilía 1" loading="lazy">
+        <img class="slide-img" src="assets/img/foto-rifa-2.jpg" alt="Kit Natura Ilía 2" loading="lazy">
+      </div>
+      <div class="promo-body">
+        <div class="promo-badge">Grande Prêmio</div>
+        <div class="promo-title">Kit Natura Ilía Completo</div>
+        <div class="promo-subtitle">Sorteio de um Kit Natura Ilia. Apenas <strong>R$ 10,00</strong> por número!</div>
+      </div>
+    </div>
+
+    <!-- PROGRESSO -->
+    <div class="progress-section">
+      <div class="progress-head">
+        <span class="progress-label">Vendidos</span>
+        <span class="progress-count"><strong id="progressSold">0</strong> de <span id="progressTotal">100</span></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <!-- DASHBOARD CLIENTE -->
+    <div id="clientDashboard" class="client-dashboard" style="display:none">
+      <div class="client-welcome">Bem-vindo(a)!</div>
+      <div class="client-name" id="clientPhoneDisplay">(00) 00000-0000</div>
+      <div class="my-numbers-box">
+        <div class="my-numbers-title">Seus números (toque para detalhes)</div>
+        <div class="my-numbers-list" id="myNumbersList">
+          <span style="font-size:12px;color:var(--muted)">Você ainda não possui números. Escolha abaixo.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS ADMIN -->
+    <div class="tabs" id="adminTabs" role="tablist">
+      <button class="tab active" id="tBtnPainel" onclick="trocarAba('painel',this)" role="tab">Painel</button>
+      <button class="tab" id="tBtnGrade" onclick="trocarAba('grade',this)" role="tab">Grade</button>
+      <button class="tab" id="tBtnConfig" onclick="trocarAba('config',this)" role="tab">Configurações</button>
+    </div>
+
+    <!-- PAINEL ADMIN -->
+    <div id="p-painel" class="page">
+      <div class="section">
+        <div class="section-title">Balanço Geral</div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num" style="color:var(--accent)" id="sVend">0</div><div class="stat-label">Reservados</div></div>
+          <div class="stat-card"><div class="stat-num" style="color:var(--primary)" id="sPag">0</div><div class="stat-label">Pagos</div></div>
+          <div class="stat-card"><div class="stat-num" id="sLivre">0</div><div class="stat-label">Livres</div></div>
+        </div>
+        <div class="stat-cash">
+          <div class="stat-label">Total em Caixa (Pagos)</div>
+          <div class="stat-num" id="sCaixa">R$ 0,00</div>
+        </div>
+        <button class="btn-block btn-block-secondary" onclick="exportarCSV()" style="margin-top:12px">Exportar lista (CSV)</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Compradores</div>
+        <div class="form-control" style="margin-bottom:8px">
+          <input class="form-input" id="searchList" placeholder="Buscar por nome ou telefone..." oninput="listarCompradoresAdmin()">
+        </div>
+        <div id="listaCompradoresContainer"></div>
+      </div>
+    </div>
+
+    <!-- GRADE -->
+    <div id="p-grade" class="page">
+      <div class="section">
+        <div class="section-title text-center">Selecione o seu número da sorte</div>
+        <div class="numeros-grid" id="gridNumeros" role="grid"></div>
+        <div class="legenda">
+          <div class="leg-item"><div class="leg-dot" style="background:#dcfce7"></div>Livre</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#fef3c7"></div>Reservado</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#fee2e2"></div>Pago</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="p-config" class="page">
+      <div class="section">
+        <div class="section-title">Dados do Pix</div>
+        <div class="form-control">
+          <label class="form-label" for="cfgChave">Chave Pix</label>
+          <input class="form-input" id="cfgChave" placeholder="E-mail, CNPJ, Celular ou Aleatória">
+          <div class="form-hint">Para celular use formato +5586999999999</div>
+        </div>
+        <div class="form-control">
+          <label class="form-label" for="cfgTitular">Nome do Titular (até 25 caracteres)</label>
+          <input class="form-input" id="cfgTitular" placeholder="Ex: IPBM TERESINA" maxlength="25">
+        </div>
+        <div class="form-control">
+          <label class="form-label" for="cfgCidade">Cidade (até 15 caracteres)</label>
+          <input class="form-input" id="cfgCidade" placeholder="Ex: TERESINA" maxlength="15">
+        </div>
+        <button class="btn-submit" onclick="salvarConfiguracoes()">Salvar Configurações</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Backup local</div>
+        <button class="btn-block btn-block-secondary" onclick="exportarBackup()">Baixar backup JSON</button>
+        <label class="btn-block btn-block-secondary" style="cursor:pointer">
+          Restaurar backup JSON
+          <input type="file" accept="application/json" onchange="importarBackup(event)" style="display:none">
+        </label>
+      </div>
+
+      <div class="section" style="border-color:#fca5a5">
+        <div class="section-title" style="color:var(--red)">Zona de risco</div>
+        <button class="btn-block btn-block-danger" onclick="reiniciarRifa()">Apagar todas as reservas</button>
+      </div>
+    </div>
+
+    <div class="footer">Desenvolvido para IPBM Teresina Piauí <span style="color:var(--mid)">por</span> <strong style="color:var(--dark)">By.Wesley Luther</strong></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="controlarFechamentoModal(event)" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="text-center">
+      <span id="modalNumeroBadge" style="display:inline-block;padding:6px 16px;background:var(--dark);color:#fff;font-weight:900;border-radius:99px;font-size:18px;margin-bottom:8px">000</span>
+      <h3 id="modalTitulo" style="font-size:20px;font-weight:800">Reservar Número</h3>
+      <p id="modalSub" style="font-size:13px;color:var(--mid);margin-bottom:16px">Insira seus dados para gerar o pagamento</p>
+    </div>
+
+    <div id="modalForm">
+      <div class="form-control">
+        <label class="form-label" for="mNome">Nome Completo</label>
+        <input class="form-input" id="mNome" placeholder="Ex: Maria das Dores" autocomplete="name">
+      </div>
+      <div class="form-control" id="mFoneCompradorWrap" style="display:none">
+        <label class="form-label" for="mFoneComprador">Telefone do comprador</label>
+        <input class="form-input" id="mFoneComprador" type="tel" inputmode="numeric"
+               placeholder="(00) 00000-0000" maxlength="16">
+        <div class="form-hint">Necessário para o comprador acessar</div>
+      </div>
+    </div>
+
+    <div id="modalAdminStatus" style="display:none">
+      <label class="form-label">Status</label>
+      <div class="status-select">
+        <div class="status-opt" id="optRes" onclick="definirStatusVenda('reservado')">Reservado</div>
+        <div class="status-opt" id="optPag" onclick="definirStatusVenda('pago')">Pago</div>
+      </div>
+    </div>
+
+    <div id="modalPixArea" style="display:none" class="pix-section">
+      <div class="countdown-block" id="countdownBlock">
+        <div class="countdown-title">Aguardando pagamento</div>
+        <div class="countdown-time" id="countdownTime">12:00</div>
+        <div class="countdown-sub" id="countdownSub">Você tem este tempo para pagar</div>
+      </div>
+
+      <div class="pay-instructions">
+        <strong style="font-size:13px;color:var(--dark);display:block;margin-bottom:6px">Realize o pagamento:</strong>
+        <ol>
+          <li><strong>Copie o código PIX</strong> abaixo.</li>
+          <li>Abra o app do seu banco e escolha a opção <strong>PIX</strong>, como se fosse fazer uma transferência.</li>
+          <li>Selecione a opção <strong>PIX copia e cola</strong>, cole o código e confirme o pagamento.</li>
+        </ol>
+        <div class="pay-warning">Atenção: este pagamento só pode ser realizado dentro do tempo. Após este período, caso o pagamento não seja confirmado, os bilhetes voltam a ficar disponíveis.</div>
+      </div>
+
+      <div class="pix-qr-wrap">
+        <div style="font-size:12px;font-weight:700;color:var(--mid)" id="pixTargetChave">Chave: </div>
+        <div style="font-size:26px;font-weight:900;color:var(--primary-dark);margin:6px 0" id="pixValorDisplay">R$ 10,00</div>
+        <div id="qrCodeTarget" style="display:inline-block;margin:8px 0"></div>
+      </div>
+      <div class="form-label">Código Copia e Cola:</div>
+      <div class="pix-code" id="pixStringTarget"></div>
+      <button class="btn-block btn-block-primary" onclick="copiarCodigoPix()">Copiar Código Pix</button>
+      <button class="btn-block btn-pix-validar" id="btnJaPaguei" onclick="validarPagamentoPix()" style="margin-top:8px">✅ Já paguei! Verificar pagamento</button>
+
+      <!-- COMPROVANTE -->
+      <div class="receipt-card" id="receiptCard">
+        <div class="receipt-header">
+          <img class="receipt-logo" src="assets/img/logo-ibpm.jpg" alt="IPBM">
+          <div class="receipt-title">Sorteio Kit Natura Ilia</div>
+          <div class="receipt-subtitle">Deus Abençoe!</div>
+        </div>
+        <div class="receipt-section-title">Detalhes da sua compra</div>
+        <div class="receipt-row"><div class="receipt-label">Comprador:</div><div class="receipt-value" id="rcComprador">—</div></div>
+        <div class="receipt-row"><div class="receipt-label">Telefone:</div><div class="receipt-value" id="rcTelefone">—</div></div>
+        <div class="receipt-row"><div class="receipt-label">Situação:</div><div class="receipt-value status-aguardando" id="rcSituacao">Aguardando pagamento</div></div>
+        <div class="receipt-row"><div class="receipt-label">Data/horário:</div><div class="receipt-value" id="rcData">—</div></div>
+        <div class="receipt-row" id="rcExpiraRow"><div class="receipt-label">Expira em:</div><div class="receipt-value" id="rcExpira">—</div></div>
+        <div class="receipt-row"><div class="receipt-label">Quantidade:</div><div class="receipt-value" id="rcQtd">1</div></div>
+        <div class="receipt-row receipt-total-row"><div class="receipt-label">Total:</div><div class="receipt-value" id="rcTotal">R$ 10,00</div></div>
+        <div class="receipt-row"><div class="receipt-label">Bilhetes:</div><div class="receipt-value"><div class="receipt-tickets" id="rcBilhetes"></div></div></div>
+        <div class="receipt-footer">Comprovante de reserva</div>
+      </div>
+
+      <button class="btn-block btn-block-secondary" onclick="baixarComprovante()">Baixar comprovante (PNG)</button>
+    </div>
+
+    <button class="btn-submit" id="btnAcaoModal" onclick="processarEnvioNumero()" style="margin-top:8px">Confirmar</button>
+    <button class="btn-block btn-block-danger" id="btnLiberarNumero" style="display:none;margin-top:8px" onclick="excluirReservaAdmin()">Liberar número</button>
+    <button class="btn-block btn-block-secondary" style="margin-top:8px" onclick="fecharModal()">Fechar</button>
+  </div>
+</div>
+
+<!-- ACTION BAR MULTI-SELECT -->
+<div class="action-bar" id="actionBar">
+  <div class="action-bar-inner">
+    <div class="action-info">
+      <div class="action-label">Selecionados</div>
+      <div class="action-detail" id="actionDetail">0 números</div>
+    </div>
+    <div class="action-bar-buttons">
+      <button class="action-clear-btn" onclick="limparSelecao()">Limpar</button>
+      <button class="action-confirm-btn" onclick="confirmarSelecaoMultipla()">Reservar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- WHATSAPP FLUTUANTE -->
+<a href="https://wa.me/5586998106406?text=Olá,%20estou%20com%20dúvida%20sobre%20a%20rifa%20da%20IPBM" 
+   class="wa-float" target="_blank" rel="noopener" aria-label="Falar no WhatsApp" id="waFloat">
+  <svg viewBox="0 0 24 24"><path fill="#fff" d="M12.012 3c-4.965 0-9.011 4.05-9.011 9.011 0 1.583.413 3.133 1.198 4.498l-1.2 4.39 4.495-1.18c1.32.72 2.801 1.099 4.321 1.1 4.962 0 9.012-4.045 9.012-9.004C21.024 7.051 16.977 3 12.012 3zm5.419 12.747c-.225.631-1.309 1.206-1.802 1.272-.451.06-1.022.075-1.642-.12-.39-.12-.87-.285-1.486-.551-2.624-1.136-4.323-3.831-4.456-4.007-.132-.177-1.082-1.442-1.082-2.75 0-1.309.675-1.952.915-2.217.24-.264.526-.33.705-.33.18 0 .36.002.511.01.156.007.365-.06.571.452.21.52.72 1.761.781 1.881.061.12.101.26.02.42-.081.16-.121.26-.241.4-.12.14-.254.312-.361.42-.12.12-.244.251-.101.498.143.247.636 1.05 1.366 1.701.942.841 1.737 1.11 1.981 1.23.245.12.39.102.535-.064.145-.166.62-.723.786-.97.165-.246.33-.207.556-.122.226.084 1.432.678 1.678.8.246.12.41.18.47.285.06.105.06.61-.165 1.241z"/></svg>
+</a>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
