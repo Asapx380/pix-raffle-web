@@ -61,7 +61,3 @@ As credenciais públicas do projeto ficam localizadas no arquivo `assets/js/app.
 Projeto ativo, mantido voluntariamente para a IBPM.
 
 ---
-
-## Autor
-
-Desenvolvido por [Wesley](https://github.com/Asapx380) — Desenvolvedor Front-End em Formação Full Stack.
