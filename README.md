@@ -1,6 +1,6 @@
 # Sistema de Arrecadação com Integração Pix em Tempo Real
 
-Aplicação web para gerenciamento de sorteio (rifa) beneficente, desenvolvida voluntariamente para a Igreja Batista Palavra e Missão (IBPM).
+Aplicação web para gerenciamento de sorteio (rifa) beneficente, desenvolvida voluntariamente para a Igreja Batista Pentecostal Mundial (IBPM).
 
 [Acesse a versão ao vivo do projeto](https://sorteio-kit-natura-ibpm.netlify.app/)
 
