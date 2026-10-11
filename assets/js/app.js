@@ -231,6 +231,7 @@ function toggleSelecaoNumero(cod, btn){
     numerosSelecionados.add(cod);
     btn.classList.add('selecionado');
   }
+  btn.setAttribute('aria-pressed', String(numerosSelecionados.has(cod)));
   atualizarActionBar();
 }
 function atualizarActionBar(){
@@ -249,7 +250,7 @@ function atualizarActionBar(){
 }
 function limparSelecao(){
   numerosSelecionados.clear();
-  document.querySelectorAll('.num-btn.selecionado').forEach(b => b.classList.remove('selecionado'));
+  document.querySelectorAll('.num-btn.selecionado').forEach(b => { b.classList.remove('selecionado'); b.setAttribute('aria-pressed', 'false'); });
   atualizarActionBar();
 }
 function confirmarSelecaoMultipla(){
@@ -339,14 +340,17 @@ async function processarEnvioMultiplo(numeros){
    ============================================================ */
 function montarGradeNumeros(){
   const grid = $('gridNumeros');
-  grid.innerHTML = '';
+  const fragmento = document.createDocumentFragment();
   for(let i = 1; i <= RIFA_TOTAL; i++){
     const cod = String(i).padStart(3, '0');
     const registro = bancoDados[cod];
     const status = registro ? registro.status : 'livre';
+    if(status !== 'livre') numerosSelecionados.delete(cod);
     const meu = registro && registro.fone === usuarioLogado;
     const btn = document.createElement('button');
     btn.className = `num-btn ${status}` + (meu ? ' meu' : '');
+    if(numerosSelecionados.has(cod)) btn.classList.add('selecionado');
+    btn.setAttribute('aria-pressed', String(numerosSelecionados.has(cod)));
     btn.textContent = cod;
     btn.onclick = () => {
       if(status === 'livre' && !sAdmin){
@@ -355,8 +359,10 @@ function montarGradeNumeros(){
         carregarModalNumero(cod);
       }
     };
-    grid.appendChild(btn);
+    fragmento.appendChild(btn);
   }
+  grid.replaceChildren(fragmento);
+  atualizarActionBar();
   atualizarProgresso();
 }
 function atualizarProgresso(){
