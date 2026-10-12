@@ -61,3 +61,27 @@ As credenciais públicas do projeto ficam localizadas no arquivo `assets/js/app.
 Projeto ativo, mantido voluntariamente para a IBPM.
 
 ---
+
+## Desenvolvimento e validação
+
+Este projeto é estático. Para servir a pasta localmente, com Python instalado:
+
+```bash
+python -m http.server 8080
+```
+
+Abra `http://localhost:8080/`. Para conferir a sintaxe, com Node.js instalado:
+
+```bash
+node --check assets/js/app.js
+```
+
+Em um ambiente de teste, confira seleção, atualização de disponibilidade, expiração de reservas e exportação. Valide as regras do Firebase e a autorização do administrador no servidor. Não use dados ou cobranças reais para testar.
+
+A verificação de sintaxe não substitui os testes da interface e das integrações.
+
+## Integrações e ambiente de teste
+
+O login por telefone e controles exibidos no navegador não substituem autorização no backend. As regras do Firebase e os fluxos do Make.com ficam fora deste repositório e devem validar permissões, pagamentos e alterações de estado. Configure serviços separados para desenvolvimento antes de executar operações de reserva ou pagamento.
+
+Não versione segredos, backups com dados pessoais ou URLs de webhook que concedam acesso às automações.
